@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.syh.dao.ProductDao">
+    <sql id="BaseSql">
+        ID, PRODUCTNUM, PRODUCTNAME, CITYNAME,DEPARTURETIME, PRODUCTPRICE, PRODUCTDESC, PRODUCTSTATUS
+    </sql>
+
+    <select id="findAllWithPage" parameterType="Product">
+        SELECT <include refid="BaseSql"/> FROM PAPER_PRODUCT
+        <where>
+            <if test="startTime != null">
+                AND DEPARTURETIME >= startTime
+            </if>
+            <if test="endTime != null">
+                AND endTime >= DEPARTURETIME
+            </if>
+            <if test="cityName != null">
+                AND CITYNAME like '%${cityName}%'
+            </if>
+            <if test="productStatus != null">
+                AND PRODUCTSTATUS = productStatus
+            </if>
+        </where>
+    </select>
+
+    <update id="deleteManyPro">
+        update PAPER_PRODUCT set PRODUCTSTATUS=0 where ID in
+        <foreach collection="ids" open="(" close=")" item="id" separator=",">
+            id
+        </foreach>
+    </update>
+
+    <select id="findAllWithPage" parameterType="Route">
+        select * from "tab_route"
+        <where>
+            <if test="rname != null">
+                and "rname" like '%${rname}%'
+            </if>
+            <if test="priceLow != null">
+                and "price" > #{priceLow}
+            </if>
+            <if test="priceHigh != null">
+                and #{prceHigh} > "price"
+            </if>
+            and "count">10 and "rflag"=1
+        </where>
+        order by "count" desc
+    </select>
+</mapper>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>收藏排行榜</title>
+        <link rel="stylesheet" type="text/css" href="css/common.css">
+        <link rel="stylesheet" type="text/css" href="css/ranking-list.css">
+        <script src="./js/jquery-3.3.1.js"></script>
+        <link rel="stylesheet" href="./lib/layui/css/layui.css">
+        <script src="./js/getParameter.js"></script>
+        <script src="./lib/layui/layui.js"></script>
+    </head>
+    <body>
+    <!--引入头部-->
+    <div id="header"></div>
+        <div class="contant">
+            <div class="shaixuan">
+                <span>线路名称</span>
+                <input type="text" id="routeName">
+                <span>金额</span>
+                <input id="priceLow" type="text">~<input id="priceHigh" type="text">
+                <button id="searchButton">搜索</button>
+            </div>
+            <div class="list clearfix">
+                <ul id="routeList">
+                </ul>
+            </div>
+            <div id="demo1"></div>
+        </div>
+    	
+         <!--导入底部-->
+        <div id="footer"></div>
+    <!--导入布局js，共享header和footer-->
+    <script type="text/javascript" src="js/include.js"></script>
+    </body>
+
+<script>
+    var page = 1;
+    var limit = 10;
+    var totalNum;
+
+    $(function () {
+        getRouteData()
+        getPage()
+
+        $("#searchButton").click(function () {
+            var routeName = $("#routeName").val();
+            var priceLow = $("#priceLow").val();
+            var priceHigh = $("#priceHigh").val();
+            $.ajax({
+                type:"post",
+                url:"/paper/route/findRouteWithFavorite.do",
+                async:false,
+                dataType: 'json',
+                data:{
+                    "pageNum":page,
+                    "pageSize":limit,
+                    "rname":routeName,
+                    "priceLow":priceLow,
+                    "priceHigh":priceHigh
+                },
+                success:function (data) {
+                    totalNum = data.total
+                    var lis = "";
+                    for(var i=0;i<data.list.length;i++){
+                        lis += "<li>\n" +
+                            "                        <span class=\"num\">"+((page-1)*limit+i+1)+"</span>\n" +
+                            "                         <a href=\"javascript:;\" onclick=\"location.href='./route_detail.html?rid="+data.list[i].rid+"'\"><img src=\""+data.list[i].rimage+"\" alt=\"\"></a>\n" +
+                            "                        <h4><a href=\"javascript:;\" onclick=\"location.href='./route_detail.html?rid="+data.list[i].rid+"'\">"+data.list[i].rname+"</a></h4>\n" +
+                            "                        <p>\n" +
+                            "                            <b class=\"price\">&yen;<span>"+data.list[i].price+"</span>起</b>\n" +
+                            "                            <span class=\"shouchang\">已订购"+data.list[i].count+"次</span>\n" +
+                            "                        </p>\n" +
+                            "                    </li>"
+                    };
+                    $("#routeList").html(lis);
+                }
+            })
+        })
+    })
+
+    function getRouteData(){
+        $.ajax({
+            type:"post",
+            url:"/paper/route/findRouteWithFavorite.do",
+            async:false,
+            dataType: 'json',
+            data:{
+                "pageNum":page,
+                "pageSize":limit,
+            },
+            success:function (data) {
+                totalNum = data.total
+                var lis = "";
+                for(var i=0;i<data.list.length;i++){
+                    lis += "<li>\n" +
+                        "                        <span class=\"num\">"+((page-1)*limit+i+1)+"</span>\n" +
+                        "                         <a href=\"javascript:;\" onclick=\"location.href='./route_detail.html?rid="+data.list[i].rid+"'\"><img src=\""+data.list[i].rimage+"\" alt=\"\"></a>\n" +
+                        "                        <h4><a href=\"javascript:;\" onclick=\"location.href='./route_detail.html?rid="+data.list[i].rid+"'\">"+data.list[i].rname+"</a></h4>\n" +
+                        "                        <p>\n" +
+                        "                            <b class=\"price\">&yen;<span>"+data.list[i].price+"</span>起</b>\n" +
+                        "                            <span class=\"shouchang\">已订购"+data.list[i].count+"次</span>\n" +
+                        "                        </p>\n" +
+                        "                    </li>"
+                };
+                $("#routeList").html(lis);
+            }
+        })
+    }
+
+    function getPage() {
+        layui.use('laypage', function(){
+            var laypage = layui.laypage;
+            //完整功能
+            laypage.render({
+                elem: 'demo1'
+                ,count: totalNum
+                ,layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                ,jump: function(obj, first){
+                    page = obj.curr;
+                    limit = obj.limit;
+                    //首次不执行
+                    if(!first){
+                        getRouteData()  //加载数据
+                    }
+                }
+            });
+        });
+    }
+</script>
+</html>
